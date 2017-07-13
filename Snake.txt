@@ -39,7 +39,7 @@ namespace Snake
         // змея: список сегментов (нулевой индекс в списке - голова змеи)  
         List<Coord> snake = new List<Coord>();
         Coord fruit; // координаты фрукта
-        int way = 0; // направление движения змеи: 0 - вверх, 1 - вправо, 2 - вниз, 3 - влево
+        int way; // направление движения змеи
         int score = 0; // набранные очки в игре
 
         Program()
@@ -58,15 +58,38 @@ namespace Snake
             timer.Interval = 200; // таймер в 200 миллисекунд
             timer.Tick += new EventHandler(Timer); // привязка обработчика таймера
             timer.Start(); // запуск таймера
-            // немного кривой рандом змеи из двух сегментов
-            snake.Add(new Coord(rand.Next(M), rand.Next(N)));
-            snake.Add(new Coord(rand.Next(M), rand.Next(N)));
+            // рандом змеи из трёх сегментов
+            int wayX = rand.Next(M);
+            int wayY = rand.Next(N);
+            snake.Add(new Coord(wayX, wayY)); // голова
+            way = rand.Next(0, 3); // рандомное направление змеи при появлении (0 - вверх, 1 - вправо, 2 - вниз, 3 - влево)
+            // хвост, в зависимости от нарандомленного направления
+            switch (way)
+            {
+                case 0:
+                    snake.Add(new Coord(wayX, wayY + 1));
+                    snake.Add(new Coord(wayX, wayY + 2));
+                    break;
+                case 1:
+                    snake.Add(new Coord(wayX - 1, wayY));
+                    snake.Add(new Coord(wayX - 2, wayY));
+                    break;
+                case 2:
+                    snake.Add(new Coord(wayX, wayY - 1));
+                    snake.Add(new Coord(wayX, wayY - 2));
+                    break;
+                case 3:
+                    snake.Add(new Coord(wayX + 1, wayY));
+                    snake.Add(new Coord(wayX + 2, wayY));
+                    break;
+            }
             fruit = new Coord(rand.Next(M), rand.Next(N)); // координаты фрукта
         }
 
-        // обработка нажатий на клавиш. Стрелками меняется направление движения, если оно не противоположное
+        // обработка нажатий на клавиш
         void KeyD(object sender, KeyEventArgs e)
         {
+            // стрелками меняется направление движения, если оно не противоположное
             switch (e.KeyData)
             {
                 case Keys.Up:
@@ -85,12 +108,13 @@ namespace Snake
                     if (way != 1)
                         way = 3;
                     break;
-                case Keys.Escape: // кривая пауза
-                    timer.Interval = 999999;
-                    MessageBox.Show("Pause\nEnter - continue");
-                    break;
-                case Keys.Enter: // кривое снятие с паузы
-                    timer.Interval = 200;
+                case Keys.Escape: // пауза
+                    timer.Stop();
+                    DialogResult pause = MessageBox.Show("Continue?", "Pause", MessageBoxButtons.YesNo);
+                    if (pause == System.Windows.Forms.DialogResult.Yes)
+                        timer.Start();
+                    if (pause == System.Windows.Forms.DialogResult.No)
+                        Close();
                     break;
             }
         }
@@ -134,37 +158,34 @@ namespace Snake
                 snake.RemoveAt(snake.Count - 1);
 
 
-
             // проигрыш при столкновении змеи с собой
-            if (EatMyself())
-            {
-                MessageBox.Show("Game over");
-                this.Close();
-                return;
-            }
-
+            //if (EatMyself())
+            //{
+            //    MessageBox.Show("Game over");
+            //    this.Close();
+            //    return;
+            //}
 
 
             Invalidate(); // перерисовка, вызов Rendering
         }
 
 
-
-        private bool EatMyself()
-        {
-            int count = 0; // количество сегментов, равных голове
-            foreach (Coord t in snake)
-            {
-                if (t == snake[0])
-                    count++;
-            }
-            if (count > 1 && fruit != snake[0])
-                return true;
-            else
-                return false;
-        }
-
+        //private bool EatMyself()
+        //{
+        //    int count = 0; // количество сегментов, равных голове
+        //    foreach (Coord t in snake)
+        //    {
+        //        if (t == snake[0])
+        //            count++;
+        //    }
+        //    if (snake.Count > 1 && fruit != snake[0])
+        //        return true;
+        //    else
+        //        return false;
+        //}
         //snake[0] == snake[count]
+
 
         // отрисовка
         void Rendering(object sender, PaintEventArgs e)
