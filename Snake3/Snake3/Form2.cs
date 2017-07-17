@@ -38,10 +38,8 @@ namespace Snake3
         }
         public Form2(Form1 f)
         {
-            //this.Text = "Snake game by Daizex"; // заголовок формы
-            //this.FormBorderStyle = FormBorderStyle.FixedDialog; // запрет растягивания формы
-            //this.MaximizeBox = false; // недоступность кнопки "развернуть во весь экран"
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None; // недоступность всех элементов управления окном
+            this.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.StartPosition = FormStartPosition.CenterScreen; // форма отображается по центру экрана
             this.DoubleBuffered = true; // для прорисовки, чтобы не мигало
             int caption_size = SystemInformation.CaptionHeight; // высота шапки формы
