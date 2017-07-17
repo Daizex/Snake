@@ -21,42 +21,44 @@ namespace Snake3
                 Y = y;
             }
         }
-        // инициализация таймера
+        // timer initialization
         Timer timer = new Timer();
+        Timer timer2 = new Timer();
         Random rand = new Random((int)DateTime.Now.Ticks & 0x0000FFFF);
-        // ширина и высота поля в кетках, размер клетки в пикселах
+        // width and height of the field in cells, cell size in pixels
         int M = 60, N = 40, С = 10;
-        // змея: список сегментов (нулевой индекс в списке - голова змеи)  
+        // list of segments of the snake (zero index in the list - the head of the snake)
         List<Coord> snake = new List<Coord>();
-        Coord justFruit; // координаты фрукта
-        Coord badFruit; // координаты фрукта, уменьшающего змею на 1
-        int way; // направление движения змеи
-        int score = 0; // набранные очки в игре
-        public Form2()
-        {
-            InitializeComponent();
-        }
+        Coord simpleFruit; // сoordinates of fruit
+        Coord badFruit; // coordinates of the fruit, reducing the snake by 1
+        Coord goFruit1;
+        Coord goFruit2;
+        Coord goFruit3;
+        int way; // direction of movement of the snake
+        int score = 0; // points scored in the game
         public Form2(Form1 f)
         {
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None; // недоступность всех элементов управления окном
-            this.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.StartPosition = FormStartPosition.CenterScreen; // форма отображается по центру экрана
-            this.DoubleBuffered = true; // для прорисовки, чтобы не мигало
-            int caption_size = SystemInformation.CaptionHeight; // высота шапки формы
-            int frame_size = SystemInformation.FrameBorderSize.Height; // ширина границы формы
-            // установка размера внутренней области формы W * H с учетом высоты шапки и ширины границ
-            this.Size = new Size(M * С + frame_size, N * С + caption_size + frame_size);
-            this.Paint += new PaintEventHandler(Rendering); // привязка обработчика прорисовки формы
-            this.KeyDown += new KeyEventHandler(KeyD); // привязка обработчика нажатий на кнопки
-            timer.Interval = 200; // таймер в 200 миллисекунд
-            timer.Tick += new EventHandler(Timer); // привязка обработчика таймера
-            timer.Start(); // запуск таймера
-            // рандом змеи из трёх сегментов
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None; // inaccessibility of all the window controls
+            this.BackColor = System.Drawing.SystemColors.GradientActiveCaption; // background color
+            this.StartPosition = FormStartPosition.CenterScreen; // the shape is displayed in the center of the screen
+            this.DoubleBuffered = true; // for drawing, so as not to blink
+            this.Size = new Size(M * С, N * С); //form size
+            this.Paint += new PaintEventHandler(Rendering); // binding the handler drawing of form
+            this.KeyDown += new KeyEventHandler(KeyD); // binding the handler button presses
+            timer.Interval = 200; // timer in 200 milliseconds
+            timer.Tick += new EventHandler(Timer); // binding timer handler
+            timer.Start(); // start the timer
+
+            timer2.Interval = 5000;
+            timer2.Tick += new EventHandler(randGoFruit); // binding timer handler
+            timer2.Start(); // start the timer
+
+            // random snake of 3 segments
             int wayX = rand.Next(M);
             int wayY = rand.Next(N);
-            snake.Add(new Coord(wayX, wayY)); // голова
-            way = rand.Next(0, 3); // рандомное направление змеи при появлении (0 - вверх, 1 - вправо, 2 - вниз, 3 - влево)
-            // хвост, в зависимости от нарандомленного направления
+            snake.Add(new Coord(wayX, wayY)); // head
+            way = rand.Next(0, 3); // random direction of the snake when it appears (0 - up, 1 - right, 2 - down, 3 - left)
+            // tail, depending on the outward direction
             switch (way)
             {
                 case 0:
@@ -76,13 +78,16 @@ namespace Snake3
                     snake.Add(new Coord(wayX + 2, wayY));
                     break;
             }
-            justFruit = new Coord(rand.Next(M), rand.Next(N)); // координаты простого фрукта
-            badFruit = new Coord(rand.Next(M), rand.Next(N)); // координаты фрукта, уменьшающего мею на 1
+            simpleFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of a simple fruit
+            badFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of the fruit reducing the snake by 1
+            goFruit1 = new Coord(rand.Next(M), rand.Next(N));
+            goFruit2 = new Coord(rand.Next(M), rand.Next(N));
+            goFruit3 = new Coord(rand.Next(M), rand.Next(N));
         }
-        // обработка нажатий на клавиши
+        // processing keydown
         void KeyD(object sender, KeyEventArgs e)
         {
-            // стрелками меняется направление движения, если оно не противоположное
+            // the direction of movement changes if the arrow is not the opposite
             switch (e.KeyData)
             {
                 case Keys.Up:
@@ -101,7 +106,7 @@ namespace Snake3
                     if (way != 1)
                         way = 3;
                     break;
-                case Keys.Escape: // пауза
+                case Keys.Escape: // pause
                     timer.Stop();
                     DialogResult pause = MessageBox.Show("Continue?", "Pause", MessageBoxButtons.YesNo);
                     if (pause == System.Windows.Forms.DialogResult.Yes)
@@ -111,12 +116,18 @@ namespace Snake3
                     break;
             }
         }
-
+        // random "game over" fruit
+        void randGoFruit(object sender, EventArgs e)
+        {
+            goFruit1 = new Coord(rand.Next(M), rand.Next(N));
+            goFruit2 = new Coord(rand.Next(M), rand.Next(N));
+            goFruit3 = new Coord(rand.Next(M), rand.Next(N));
+        }
         void Timer(object sender, EventArgs e)
         {
-            // запоминание координат головы змеи
+            // storing coordinates snake head
             int x = snake[0].X, y = snake[0].Y;
-            // в зависимости от направления, вычисляется, где будет голова на следующем шаге
+            // depending on the direction, it is calculated where the head will be in the next step
             switch (way)
             {
                 case 0:
@@ -140,57 +151,90 @@ namespace Snake3
                         x = M - 1;
                     break;
             }
-            Coord newhead = new Coord(x, y); // сегмент с новыми координатами головы
-            snake.Insert(0, newhead); // вставляем его в начало списка сегментов змеи(змея выросла на один сегмент)
-            if (snake[0].X == justFruit.X && snake[0].Y == justFruit.Y) // если координаты головы и простого фрукта совпали
+            Coord newhead = new Coord(x, y); // segment with new coordinates of the head
+            snake.Insert(0, newhead); // insert it at the top of the list of segments of the snake (the snake grew by one segment)
+            if (snake[0].X == simpleFruit.X && snake[0].Y == simpleFruit.Y) // if the coordinates of the head and simple fruit coincide
             {
-                justFruit = new Coord(rand.Next(M), rand.Next(N)); // рандомится новый простой фрукт
-                score++; // увеличение набранных очков в игре
+                // a random new fruit
+                simpleFruit = new Coord(rand.Next(M), rand.Next(N));
+                badFruit = new Coord(rand.Next(M), rand.Next(N));
+                score++; // increment of points
+                // snake acceleration
+                if (timer.Interval <= 10)
+                    timer.Interval = 10;
+                else
+                    timer.Interval -= 10;
             }
-            else // чтобы змея не росла постонно, когда не ест фрукт
+            else // that the snake does not grow constantly, when does not eat the fruit
                 snake.RemoveAt(snake.Count - 1);
-            if (snake[0].X == badFruit.X && snake[0].Y == badFruit.Y) // если координаты головы и фрукта, уменьшеающего змею на 1, совпали
+            if (snake[0].X == badFruit.X && snake[0].Y == badFruit.Y) // if the coordinates of the head and the fruit reducing the snake by 1 coincide
             {
-                snake.Remove(newhead);
-                badFruit = new Coord(rand.Next(M), rand.Next(N)); // рандомится новый фрукт
+                snake.Remove(newhead); // removing an element from the snake's list
+                // a random new fruit
+                simpleFruit = new Coord(rand.Next(M), rand.Next(N));
+                badFruit = new Coord(rand.Next(M), rand.Next(N));
+                // decrement of points
                 if (score > 0)
-                    score--; // уменьшение набранных очков в игре
+                    score--;
                 else
                 {
                     snake.Insert(0, newhead);
                     score = 0;
                 }
+                timer.Interval += 10; // snake deceleration
             }
-
-
-            // проигрыш при столкновении змеи с собой
-            // не работает
-            int count = 0; // количество сегментов, равных голове
-            foreach (Coord t in snake)
+            if ((snake[0].X == goFruit1.X && snake[0].Y == goFruit1.Y) ||
+                (snake[0].X == goFruit2.X && snake[0].Y == goFruit2.Y) ||
+                (snake[0].X == goFruit3.X && snake[0].Y == goFruit3.Y))
             {
-                if (t == snake[0])
-                    count++;
-            }
-            if (snake.Count > 1 && justFruit != snake[0] && snake[0].X == snake[count].X && snake[0].Y == snake[count].Y)
-            {
-                MessageBox.Show("Game over");
+                timer.Stop();
+                MessageBox.Show("Game over\nScore: " + snake.Count.ToString());
                 this.Close();
             }
 
 
-            Invalidate(); // перерисовка, вызов Rendering
+
+            if (EatMySelf())
+            {
+                MessageBox.Show(" " + snake.Count.ToString());
+                this.Close();
+            }
+
+
+
+            Invalidate(); // rendering, calling Rendering
         }
 
-        // отрисовка
+
+
+        private bool EatMySelf()
+        {
+            int count = 0;
+            foreach (Coord t in snake)
+            {
+                if (t == snake[0]) count++;
+            }
+            if (count > 1 && simpleFruit != snake[0])
+                return true;
+            else
+                return false;
+        }
+
+
+
+        // rendering
         void Rendering(object sender, PaintEventArgs e)
         {
-            e.Graphics.FillEllipse(Brushes.Green, new Rectangle(justFruit.X * С, justFruit.Y * С, С, С)); // простой фрукт
-            e.Graphics.FillEllipse(Brushes.Orange, new Rectangle(badFruit.X * С, badFruit.Y * С, С, С)); // фрукт, уменьшающий змею на 1
-            e.Graphics.FillRectangle(Brushes.Black, new Rectangle(snake[0].X * С, snake[0].Y * С, С, С)); // голова змеи
+            e.Graphics.FillEllipse(Brushes.Green, new Rectangle(simpleFruit.X * С, simpleFruit.Y * С, С, С)); // simple fruit
+            e.Graphics.FillEllipse(Brushes.Orange, new Rectangle(badFruit.X * С, badFruit.Y * С, С, С)); // a fruit that reduces the snake by 1
+            e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit1.X * С, goFruit1.Y * С, С, С));
+            e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit2.X * С, goFruit2.Y * С, С, С));
+            e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit3.X * С, goFruit3.Y * С, С, С));
+            e.Graphics.FillRectangle(Brushes.Black, new Rectangle(snake[0].X * С, snake[0].Y * С, С, С)); // head of snake
             for (int i = 1; i < snake.Count; i++)
-                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(snake[i].X * С, snake[i].Y * С, С, С)); // тело змеи
-            string state = "Score: " + score.ToString() + "\n''Escape'' - pause"; // количество очков
-            e.Graphics.DrawString(state, new Font("Arial", 10, FontStyle.Bold), Brushes.Black, new Point(5, 5)); // вывод очков
+                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(snake[i].X * С, snake[i].Y * С, С, С)); // the body of the snake
+            string state = "Score: " + score.ToString() + "\n''Escape'' - pause"; // points
+            e.Graphics.DrawString(state, new Font("Arial", 10), Brushes.Black, new Point(5, 5)); // drawing points
         }
     }
 }
