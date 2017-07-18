@@ -1,0 +1,8 @@
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\bin\Debug\Snake3.exe
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\bin\Debug\Snake3.pdb
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.Form1.resources
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.Properties.Resources.resources
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.csproj.GenerateResource.Cache
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.exe
+c:\users\алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.pdb
+C:\Users\Алина\documents\visual studio 2010\Projects\Snake3\Snake3\obj\x86\Debug\Snake3.csprojResolveAssemblyReference.cache
