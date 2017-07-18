@@ -11,6 +11,7 @@ namespace Snake3
 {
     public partial class Form2 : Form
     {
+        // for job with coordinates
         public class Coord
         {
             public int X;
@@ -21,7 +22,7 @@ namespace Snake3
                 Y = y;
             }
         }
-        // timer initialization
+        // timers initialization
         Timer timer = new Timer();
         Timer timer2 = new Timer();
         Random rand = new Random((int)DateTime.Now.Ticks & 0x0000FFFF);
@@ -31,6 +32,7 @@ namespace Snake3
         List<Coord> snake = new List<Coord>();
         Coord simpleFruit; // сoordinates of fruit
         Coord badFruit; // coordinates of the fruit, reducing the snake by 1
+        // "game over" fruit
         Coord goFruit1;
         Coord goFruit2;
         Coord goFruit3;
@@ -48,11 +50,9 @@ namespace Snake3
             timer.Interval = 200; // timer in 200 milliseconds
             timer.Tick += new EventHandler(Timer); // binding timer handler
             timer.Start(); // start the timer
-
-            timer2.Interval = 5000;
+            timer2.Interval = 10000; // timer in 10000 milliseconds for "game over" fruit
             timer2.Tick += new EventHandler(randGoFruit); // binding timer handler
             timer2.Start(); // start the timer
-
             // random snake of 3 segments
             int wayX = rand.Next(M);
             int wayY = rand.Next(N);
@@ -80,6 +80,7 @@ namespace Snake3
             }
             simpleFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of a simple fruit
             badFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of the fruit reducing the snake by 1
+            // coordinates of the "game over" fruit
             goFruit1 = new Coord(rand.Next(M), rand.Next(N));
             goFruit2 = new Coord(rand.Next(M), rand.Next(N));
             goFruit3 = new Coord(rand.Next(M), rand.Next(N));
@@ -153,7 +154,8 @@ namespace Snake3
             }
             Coord newhead = new Coord(x, y); // segment with new coordinates of the head
             snake.Insert(0, newhead); // insert it at the top of the list of segments of the snake (the snake grew by one segment)
-            if (snake[0].X == simpleFruit.X && snake[0].Y == simpleFruit.Y) // if the coordinates of the head and simple fruit coincide
+            // if the coordinates of the head and simple fruit coincide
+            if (snake[0].X == simpleFruit.X && snake[0].Y == simpleFruit.Y)
             {
                 // a random new fruit
                 simpleFruit = new Coord(rand.Next(M), rand.Next(N));
@@ -167,7 +169,8 @@ namespace Snake3
             }
             else // that the snake does not grow constantly, when does not eat the fruit
                 snake.RemoveAt(snake.Count - 1);
-            if (snake[0].X == badFruit.X && snake[0].Y == badFruit.Y) // if the coordinates of the head and the fruit reducing the snake by 1 coincide
+            // if the coordinates of the head and the fruit reducing the snake by 1 coincide
+            if (snake[0].X == badFruit.X && snake[0].Y == badFruit.Y)
             {
                 snake.Remove(newhead); // removing an element from the snake's list
                 // a random new fruit
@@ -183,56 +186,44 @@ namespace Snake3
                 }
                 timer.Interval += 10; // snake deceleration
             }
+            // game over
             if ((snake[0].X == goFruit1.X && snake[0].Y == goFruit1.Y) ||
                 (snake[0].X == goFruit2.X && snake[0].Y == goFruit2.Y) ||
                 (snake[0].X == goFruit3.X && snake[0].Y == goFruit3.Y))
             {
                 timer.Stop();
-                MessageBox.Show("Game over\nScore: " + snake.Count.ToString());
-                this.Close();
+                DialogResult result = MessageBox.Show("Score: " + score + "\nRepeat?", "Game Over", MessageBoxButtons.YesNo);
+                if (result == System.Windows.Forms.DialogResult.Yes)
+                {
+                    simpleFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of a simple fruit
+                    badFruit = new Coord(rand.Next(M), rand.Next(N)); // coordinates of the fruit reducing the snake by 1
+                    // coordinates of the "game over" fruit
+                    goFruit1 = new Coord(rand.Next(M), rand.Next(N));
+                    goFruit2 = new Coord(rand.Next(M), rand.Next(N));
+                    goFruit3 = new Coord(rand.Next(M), rand.Next(N));
+                    timer.Start();
+                }
+                if (result == System.Windows.Forms.DialogResult.No)
+                    this.Close();
             }
-
-
-
-            if (EatMySelf())
-            {
-                MessageBox.Show(" " + snake.Count.ToString());
-                this.Close();
-            }
-
-
-
             Invalidate(); // rendering, calling Rendering
         }
-
-
-
-        private bool EatMySelf()
-        {
-            int count = 0;
-            foreach (Coord t in snake)
-            {
-                if (t == snake[0]) count++;
-            }
-            if (count > 1 && simpleFruit != snake[0])
-                return true;
-            else
-                return false;
-        }
-
-
-
         // rendering
         void Rendering(object sender, PaintEventArgs e)
         {
-            e.Graphics.FillEllipse(Brushes.Green, new Rectangle(simpleFruit.X * С, simpleFruit.Y * С, С, С)); // simple fruit
-            e.Graphics.FillEllipse(Brushes.Orange, new Rectangle(badFruit.X * С, badFruit.Y * С, С, С)); // a fruit that reduces the snake by 1
+            // simple fruit
+            e.Graphics.FillEllipse(Brushes.Green, new Rectangle(simpleFruit.X * С, simpleFruit.Y * С, С, С));
+            // a fruit that reduces the snake by 1
+            e.Graphics.FillEllipse(Brushes.Orange, new Rectangle(badFruit.X * С, badFruit.Y * С, С, С));
+            // "game over" fruit
             e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit1.X * С, goFruit1.Y * С, С, С));
             e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit2.X * С, goFruit2.Y * С, С, С));
             e.Graphics.FillEllipse(Brushes.Red, new Rectangle(goFruit3.X * С, goFruit3.Y * С, С, С));
-            e.Graphics.FillRectangle(Brushes.Black, new Rectangle(snake[0].X * С, snake[0].Y * С, С, С)); // head of snake
+            // head of snake
+            e.Graphics.FillRectangle(Brushes.Black, new Rectangle(snake[0].X * С, snake[0].Y * С, С, С));
+            // the body of the snake
             for (int i = 1; i < snake.Count; i++)
-                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(snake[i].X * С, snake[i].Y * С, С, С)); // the body of the snake
+                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(snake[i].X * С, snake[i].Y * С, С, С));
             string state = "Score: " + score.ToString() + "\n''Escape'' - pause"; // points
             e.Graphics.DrawString(state, new Font("Arial", 10), Brushes.Black, new Point(5, 5)); // drawing points
         }
